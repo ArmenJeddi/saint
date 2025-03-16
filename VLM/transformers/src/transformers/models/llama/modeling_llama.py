@@ -779,9 +779,9 @@ class LlamaModel(LlamaPreTrainedModel):
 
                 hidden_states = layer_outputs[0]
 
-                if True or use_cache:
-                    current_layer_kvs = layer_outputs[2 if output_attentions else 1]
-                    next_decoder_cache += (current_layer_kvs,)
+                # Always using cache
+                current_layer_kvs = layer_outputs[2 if output_attentions else 1]
+                next_decoder_cache += (current_layer_kvs,)
 
                 if output_attentions:
                     all_self_attns += (layer_outputs[1],)
@@ -815,11 +815,12 @@ class LlamaModel(LlamaPreTrainedModel):
                     position_ids = torch.full((batch_size, 1), seq_length_with_past, device=device)
 
             else:
-                new_attention_mask = attention_mask
+                if hidden_states.shape[1] == 1:
+                    attention_mask = None
 
                 layer_outputs = decoder_layer(
                     hidden_states,
-                    attention_mask=new_attention_mask,
+                    attention_mask=attention_mask,
                     position_ids=position_ids,
                     past_key_value=past_key_value,
                     output_attentions=output_attentions,
