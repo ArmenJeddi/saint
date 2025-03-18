@@ -66,6 +66,35 @@ Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by 
 
 ---
 
+## 🔧 Configuration for Different Methods
+
+All pruning methods are controlled using the following file:
+**`VLM/lmms-eval/lmms_eval/models/llava.py`**
+
+### ViT-Only Pruning
+- The **`saint.patch.clip`** function is called to handle token dropping.
+- Any combination of layers and dropping methods can be specified.
+- For layers where no pruning is required, set `prune_mode = "None"`.
+- For layers where pruning is needed, set `prune_mode = "iterative_drop_full_graph"`.
+- Parameters **`keep_num`** and **`r`** should be adjusted in **`VLM/saint/patch/clip.py`**.
+- Ensure **`use_saint`** in the LLM-only section is set to **`False`** when running in ViT-only mode.
+
+### LLM-Only Pruning
+- Ensure the ViT-only section is **commented out**.
+- Set **`use_saint = True`** in the LLM-only section.
+- Specify the parameters:
+  - **`saint_start`**
+  - **`saint_end`**
+  - **`saint_threshold`**
+
+### Hybrid Pruning
+- Set **`use_saint = True`**.
+- Configure settings in both the **ViT-only** and **LLM-only** sections.
+- Adjust ViT-only parameters in **`VLM/saint/patch/clip.py`**.
+- Set **`saint_image_token_length`** in the LLM-only part to match the number of remaining tokens after ViT pruning.
+
+---
+
 ## 🚀 Running the Code
 
 To execute the code for the **MME** dataset, use the following command:
