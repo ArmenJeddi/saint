@@ -5,7 +5,7 @@ Authors: Ahmadreza Jeddi, Negin Baghbanzadeh, Elham Dolatabadi, Babak Taati
 
 ## What does SAINT do?
 
-![SAINT Overview](imgs/saint_overview.png)
+![SAINT Overview](imgs/SAINT_overview.png)
 
 SAINT allows researchers and practitioners to take existing ViTs and VLMs and prune their visual tokens in a training-free setup using a graphical modeling of tokens which enables aggressive token dropping based on similarity (redundancy) in the early layers of ViT/LLM, substantially improving inference efficiency while minimizing performance loss. SAINT is:
 
