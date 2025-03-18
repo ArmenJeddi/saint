@@ -1,5 +1,24 @@
-
 # **Project Setup and Usage Guide**
+
+## 📝 Overview
+
+Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by pruning them in three distinct ways. This enables a balance between inference speed and model performance. The three approaches are:
+
+1. **ViT-Only Pruning**  
+   - This method drops similar visual tokens in the Vision Transformer (ViT) without considering text information.  
+   - It is **text-agnostic** and offers **fast inference**, but **performance degrades significantly** when too many tokens are removed.
+
+2. **LLM-Only Pruning**  
+   - In this approach, vision tokens within the language model (LLM) are pruned.  
+   - Unlike ViT-only pruning, it maintains **better performance even with aggressive token removal**, but **gains less speed improvement** compared to the first method.
+
+3. **Hybrid Pruning (Best of Both Worlds)**  
+   - This approach **combines the strengths** of both methods.  
+   - Initially, around **30% of vision tokens are pruned** in ViT for a speed boost.  
+   - Additional pruning occurs within the LLM, allowing it to selectively remove redundant vision tokens **while considering textual context**.  
+   - This achieves **both speed improvement and minimal performance loss**.
+
+---
 
 ## 📚 Prerequisites
 - Python 3.10
@@ -22,7 +41,7 @@
    cd VLM
    ```
 
-3. **Install Project Dependencies in Editable Mode**  
+3. **Install Project Dependencies**  
    Execute the following commands sequentially:
 
    ```bash
@@ -64,14 +83,9 @@ python3 -m accelerate.commands.launch \
     --output_path logs
 ```
 
-### 🔍 Command Parameters
-- `--num_processes=8`: Defines the number of parallel processes.
-- `--model llava`: Specifies the model to use.
-- `--model_args`: Provides arguments for the model.
+### 🔍 Important Command Parameters
+- `--model_args`: Provides arguments for the model, like the model checkpoint path.
 - `--tasks mme`: Specifies the dataset/task.
 - `--batch_size 1`: Sets the batch size for processing.
-- `--log_samples`: Enables detailed sample logging.
-- `--log_samples_suffix`: Appends a custom suffix to the log files.
-- `--output_path logs`: Defines the directory for log storage.
 
 ---
