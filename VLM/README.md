@@ -35,7 +35,6 @@ Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by 
 
 ## Prerequisites
 - Python 3.10
-- `pip` package manager
 
 ---
 
