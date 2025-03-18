@@ -1,16 +1,29 @@
 # **Project Setup and Usage Guide**
 
-## 📝 Overview
+## 📖 Table of Contents
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Installation Instructions](#installation-instructions)
+4. [Configuration for Different Methods](#configuration-for-different-methods)
+   - [ViT-Only Pruning](#vit-only-pruning)
+   - [LLM-Only Pruning](#llm-only-pruning)
+   - [Hybrid Pruning](#hybrid-pruning)
+5. [Running the Code](#running-the-code)
+6. [Command Parameters](#command-parameters)
+
+---
+
+## Overview
 
 Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by pruning them in three distinct ways. This enables a balance between inference speed and model performance. The three approaches are:
 
 1. **ViT-Only Pruning**  
    - This method drops similar visual tokens in the Vision Transformer (ViT) without considering text information.  
-   - It is **text-agnostic** and offers **fast inference**, but **performance degrades significantly** when too many tokens are removed.
+   - It is **task-agnostic** and offers **fast inference**, but **performance degrades significantly** when too many tokens are removed.
 
 2. **LLM-Only Pruning**  
    - In this approach, vision tokens within the language model (LLM) are pruned.  
-   - Unlike ViT-only pruning, it maintains **better performance even with aggressive token removal**, but **gains less speed improvement** compared to the first method.
+   - Unlike ViT-only pruning, it maintains **better performance even with aggressive token removal**, but **lacks the speed improvements** of the first method.
 
 3. **Hybrid Pruning (Best of Both Worlds)**  
    - This approach **combines the strengths** of both methods.  
@@ -20,13 +33,13 @@ Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by 
 
 ---
 
-## 📚 Prerequisites
+## Prerequisites
 - Python 3.10
 - `pip` package manager
 
 ---
 
-## ⚙️ Installation Instructions
+## Installation Instructions
 
 1. **Create a Python Virtual Environment**
    ```bash
@@ -66,7 +79,7 @@ Our method, **SAINT**, is designed to optimize Vision-Language Models (VLMs) by 
 
 ---
 
-## 🔧 Configuration for Different Methods
+## Configuration for Different Methods
 
 All pruning methods are controlled using the following file:
 **`VLM/lmms-eval/lmms_eval/models/llava.py`**
@@ -95,7 +108,7 @@ All pruning methods are controlled using the following file:
 
 ---
 
-## 🚀 Running the Code
+## Running the Code
 
 To execute the code for the **MME** dataset, use the following command:
 
@@ -112,7 +125,7 @@ python3 -m accelerate.commands.launch \
     --output_path logs
 ```
 
-### 🔍 Important Command Parameters
+## Command Parameters
 - `--model_args`: Provides arguments for the model, like the model checkpoint path.
 - `--tasks mme`: Specifies the dataset/task.
 - `--batch_size 1`: Sets the batch size for processing.
