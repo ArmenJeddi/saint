@@ -1,10 +1,7 @@
 import torch
 from timm.models.vision_transformer import Attention, Block, VisionTransformer
 
-from saint.prune import (bipartite_soft_matching, random_drop_last, cluster_and_select_tokens_itself,
-                         kmeans_cluster_with_cls, iterative_token_drop, iterative_token_drop_merge,
-                         dbscan_with_cls_cosine, cluster_with_cls_keys, iterative_token_drop_with_l2,
-                         dbscan_with_cls_batch, iterative_drop_full_graph)
+from saint.prune import iterative_drop_full_graph, do_nothing
 from saint.utils import parse_prune_mode, parse_sim_threshold
 import math
 from transformers.models.clip.modeling_clip import CLIPEncoderLayer, CLIPAttention, CLIPVisionTransformer
@@ -30,7 +27,6 @@ class CLIPSaintBlock(CLIPEncoderLayer):
                 Whether or not to return the attentions tensors of all attention layers. See `attentions` under
                 returned tensors for more detail.
         """
-        # print("FORWARDING DEADPOOL")
         residual = hidden_states
 
         hidden_states = self.layer_norm1(hidden_states)
@@ -51,13 +47,7 @@ class CLIPSaintBlock(CLIPEncoderLayer):
                 r = 16
                 hidden_states = iterative_drop_full_graph(hidden_states, metric, keep_num=keep_num, r=r)
             else:
-                prune_func = bipartite_soft_matching(
-                    metric,
-                    prune_mode,
-                    sim_threshold,
-                    self._saint_info["class_token"],
-                    self._saint_info["distill_token"]
-                )
+                prune_func = do_nothing(hidden_states)
                 hidden_states = prune_func(hidden_states)
         
 
@@ -74,7 +64,6 @@ class CLIPSaintBlock(CLIPEncoderLayer):
         return outputs
     
 
-### TODO - return k only when needed
 class CLIPSaintAttention(CLIPAttention):
     
     def forward(
@@ -88,7 +77,6 @@ class CLIPSaintAttention(CLIPAttention):
 
         bsz, tgt_len, embed_dim = hidden_states.size()
 
-        # get query proj
         query_states = self.q_proj(hidden_states) * self.scale
         original_queries = query_states.clone().detach()
         original_qeury_states = self._shape(query_states, -1, bsz)
@@ -113,7 +101,6 @@ class CLIPSaintAttention(CLIPAttention):
                 f" {attn_weights.size()}"
             )
 
-        # apply the causal_attention_mask first
         if causal_attention_mask is not None:
             if causal_attention_mask.size() != (bsz, 1, tgt_len, src_len):
                 raise ValueError(
@@ -134,10 +121,6 @@ class CLIPSaintAttention(CLIPAttention):
         attn_weights = nn.functional.softmax(attn_weights, dim=-1)
 
         if output_attentions:
-            # this operation is a bit akward, but it's required to
-            # make sure that attn_weights keeps its gradient.
-            # In order to do so, attn_weights have to reshaped
-            # twice and have to be reused in the following
             attn_weights_reshaped = attn_weights.view(bsz, self.num_heads, tgt_len, src_len)
             attn_weights = attn_weights_reshaped.view(bsz * self.num_heads, tgt_len, src_len)
         else:
@@ -159,23 +142,7 @@ class CLIPSaintAttention(CLIPAttention):
 
         attn_output = self.out_proj(attn_output)
 
-        # key_states = key_states.view(original_shape)
-        # print(f"key_states.shape {key_states.shape}")
-        # print(f"original_shape.shape {original_shape}")
-        # print(f"original_shape.mean(1).shape {original_keys.mean(1).shape}")
-        # print(f"key_states.shape {key_states.shape}")
-        # print(f"key_states.mean(0).shape {key_states.mean(0).unsqueeze(0).shape}")
-        # print(f"original_shape.mean(1).shape {original_keys.mean(1).shape}")
-        # print(f"----------------- original_queries {original_qeury_states.shape}")
-        # return attn_output, attn_weights_reshaped, original_qeury_states.mean(1)
-        # return attn_output, attn_weights_reshaped, original_value_states.mean(1)
-        # return attn_output, attn_weights_reshaped, original_queries.mean(1)
-        # return attn_output, attn_weights_reshaped, original_values.mean(1)
         return attn_output, attn_weights_reshaped, original_keys.mean(1)
-        # original_keys = original_keys.permute(0, 2, 1, 3) 
-        # B, T, H, D = original_keys.shape
-        # original_keys = original_keys.reshape(B, T, H * D) 
-        # return attn_output, attn_weights_reshaped, original_keys
 
 
 def make_saint_class(transformer_class):
