@@ -23,7 +23,6 @@ warnings.filterwarnings("ignore")
 
 from loguru import logger as eval_logger
 
-# try:
 from llava.constants import DEFAULT_IMAGE_TOKEN, IMAGE_TOKEN_INDEX
 from llava.conversation import conv_templates
 from llava.mm_utils import (
@@ -32,10 +31,6 @@ from llava.mm_utils import (
     tokenizer_image_token,
 )
 from llava.model.builder import load_pretrained_model
-# except Exception as e:
-#     eval_logger.debug("LLaVA is not installed. Please install LLaVA to use this model.\nError: %s" % e)
-#     print("LLaVA is not installed. Please install LLaVA to use this model.")
-#     exit()
 
 # inference implementation for attention, can be "sdpa", "eager", "flash_attention_2". Seems FA2 is not effective during inference: https://discuss.huggingface.co/t/flash-attention-has-no-effect-on-inference/73453/5
 # if is_flash_attn_2_available:
@@ -292,7 +287,7 @@ class Llava(lmms):
     def generate_until(self, requests: List[Instance]) -> List[str]:
         # ======================================== SAINT ==========================================
         # ========================================= LLM ===========================================
-        self.model.config.use_saint = True
+        self.model.config.use_saint = False
         self.model.config.saint_sys_length = 36
         self.model.config.saint_image_token_length = 376
         # self.model.config.saint_image_token_length = 576
@@ -364,8 +359,6 @@ class Llava(lmms):
                     image_tensor = image_tensor.to(dtype=torch.float16, device=self.device)
             else:
                 image_tensor = None
-
-            # prompts_input = contexts[0]
 
             question_input = []
 

@@ -4,11 +4,6 @@ from typing import Callable, Optional
 import torch
 import torch.nn.functional as F
 
-
-def do_nothing(x):
-    return x
-
-
 def iterative_drop_full_graph(x, keys, keep_num=64, r=16):
     cls_token = x[:, :1, :] 
     tokens = x[:, 1:, :][0]

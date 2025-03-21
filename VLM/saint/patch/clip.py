@@ -1,7 +1,7 @@
 import torch
 from timm.models.vision_transformer import Attention, Block, VisionTransformer
 
-from saint.prune import iterative_drop_full_graph, do_nothing
+from saint.prune import iterative_drop_full_graph
 from saint.utils import parse_prune_mode, parse_sim_threshold
 import math
 from transformers.models.clip.modeling_clip import CLIPEncoderLayer, CLIPAttention, CLIPVisionTransformer
@@ -46,9 +46,6 @@ class CLIPSaintBlock(CLIPEncoderLayer):
                 keep_num = 376
                 r = 16
                 hidden_states = iterative_drop_full_graph(hidden_states, metric, keep_num=keep_num, r=r)
-            else:
-                prune_func = do_nothing(hidden_states)
-                hidden_states = prune_func(hidden_states)
         
 
         residual = hidden_states

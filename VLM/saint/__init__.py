@@ -1,10 +1,5 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
+from . import prune
+from . import patch
+from . import utils
 
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-# --------------------------------------------------------
-
-from . import prune, patch, utils
-
-__all__ = ["utils", "prune", "patch"]
+__all__ = ["prune", "patch", "utils"]

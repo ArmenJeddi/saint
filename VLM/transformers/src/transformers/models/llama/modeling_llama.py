@@ -15,10 +15,8 @@ from ...modeling_utils import PreTrainedModel
 from ...utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from .configuration_llama import LlamaConfig
 
-
-
 ################# Inline Token Pruning Func ###############################
-def bipartite_soft_matching(
+def saint_drop(
     metric: torch.Tensor,
     sim_threshold: float = 0.82,
     K: int = 5,
@@ -60,9 +58,6 @@ def bipartite_soft_matching(
             indices = torch.cat([src_indices, indices], dim=1)
 
     return indices
-
-
-
 
 
 logger = logging.get_logger(__name__)
@@ -596,9 +591,7 @@ class LlamaModel(LlamaPreTrainedModel):
         # Initialize weights and apply final processing
         self.post_init()
 
-
         self.config = config
-
 
         self.use_saint = config.use_saint
         self.saint_sys_length = config.saint_sys_length
@@ -614,8 +607,6 @@ class LlamaModel(LlamaPreTrainedModel):
         self.saint_start = self.config.saint_start
         self.saint_end = self.config.saint_end
         self.saint_threshold = self.config.saint_threshold
-
-
 
     def get_input_embeddings(self):
         return self.embed_tokens
@@ -685,7 +676,6 @@ class LlamaModel(LlamaPreTrainedModel):
             past_key_values_length = past_key_values[0][0].shape[2]
             seq_length_with_past = seq_length_with_past + past_key_values_length
 
-
         if position_ids is None:
             device = input_ids.device if input_ids is not None else inputs_embeds.device
             position_ids = torch.arange(
@@ -707,11 +697,8 @@ class LlamaModel(LlamaPreTrainedModel):
         attention_mask = self._prepare_decoder_attention_mask(
             attention_mask, (batch_size, seq_length), inputs_embeds, past_key_values_length
         )
-        
-        
 
         hidden_states = inputs_embeds
-
 
         # decoder layers
         all_hidden_states = () if output_hidden_states else None
@@ -733,7 +720,6 @@ class LlamaModel(LlamaPreTrainedModel):
         attention_mask = self._prepare_decoder_attention_mask(
             attention_mask, (batch_size, seq_length), inputs_embeds, 0
         )
-        
         
         for idx, decoder_layer in enumerate(self.layers):
             if output_hidden_states:
@@ -770,7 +756,7 @@ class LlamaModel(LlamaPreTrainedModel):
                         last_layer_key_values = current_layer_kvs[0]
                         last_layer_key_avg = torch.mean(last_layer_key_values, dim=1)
                         image_keys = last_layer_key_avg[:, SYS_LENGTH:SYS_LENGTH+IMAGE_TOKEN_LENGTH]
-                        selected_indicies = bipartite_soft_matching(image_keys, sim_threshold=SAINT_THRESH)
+                        selected_indicies = saint_drop(image_keys, sim_threshold=SAINT_THRESH)
                         kept_vision_indices = selected_indicies + SYS_LENGTH
                         
                         system_indices = torch.arange(SYS_LENGTH, device=device).unsqueeze(0).expand(batch_size, -1)
@@ -787,7 +773,6 @@ class LlamaModel(LlamaPreTrainedModel):
                         attention_mask = self._prepare_decoder_attention_mask(None, (batch_size, seq_length), hidden_states, 0)
                         
                         IMAGE_TOKEN_LENGTH = kept_vision_indices.shape[1]
-
 
                 else: ## decoding
                     position_ids = torch.full((batch_size, 1), seq_length_with_past, device=device)
@@ -812,7 +797,6 @@ class LlamaModel(LlamaPreTrainedModel):
 
                 if output_attentions:
                     all_self_attns += (layer_outputs[1],)
-
 
         hidden_states = self.norm(hidden_states)
 
