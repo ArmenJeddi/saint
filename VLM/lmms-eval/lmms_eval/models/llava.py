@@ -287,7 +287,7 @@ class Llava(lmms):
     def generate_until(self, requests: List[Instance]) -> List[str]:
         # ======================================== SAINT ==========================================
         # ========================================= LLM ===========================================
-        self.model.config.use_saint = False
+        self.model.config.use_saint = True
         self.model.config.saint_sys_length = 36
         self.model.config.saint_image_token_length = 376
         # self.model.config.saint_image_token_length = 576

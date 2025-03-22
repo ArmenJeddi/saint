@@ -9,7 +9,6 @@ from typing import List, Tuple, Union, Optional
 from torch import nn
 
 class CLIPSaintBlock(CLIPEncoderLayer):
-    
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -47,7 +46,6 @@ class CLIPSaintBlock(CLIPEncoderLayer):
                 r = 16
                 hidden_states = iterative_drop_full_graph(hidden_states, metric, keep_num=keep_num, r=r)
         
-
         residual = hidden_states
         hidden_states = self.layer_norm2(hidden_states)
         hidden_states = self.mlp(hidden_states)
@@ -60,9 +58,7 @@ class CLIPSaintBlock(CLIPEncoderLayer):
 
         return outputs
     
-
-class CLIPSaintAttention(CLIPAttention):
-    
+class CLIPSaintAttention(CLIPAttention): 
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -159,7 +155,6 @@ def make_saint_class(transformer_class):
 
 
 def apply_patch(model: CLIPVisionTransformer, threshold=0.9):
-
     SaintVisionTransformer = make_saint_class(model.__class__)
 
     model.__class__ = SaintVisionTransformer
